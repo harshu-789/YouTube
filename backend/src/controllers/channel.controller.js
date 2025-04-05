@@ -51,7 +51,7 @@ const updateChannel = async(req,res,next)=>{
             channel.set(key,req.body[key])
         })
         const updatedChannel = await channel.save()
-        return res.status(201).json({message: "Channel updated successfully", updateChannel})
+        return res.status(201).json({message: "Channel updated successfully", updatedChannel})
     } catch (error) {
         next(error)
     }

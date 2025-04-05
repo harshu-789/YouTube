@@ -8,6 +8,16 @@ const userSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    firstName:{
+        type: String,
+        required: true,
+        trim: true
+    },
+    lastName:{
+        type: String,
+        required: true,
+        trim: true
+    },
     email: {
         unique: true,
         type: String,
@@ -19,10 +29,31 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    avatar: {
+    profile: {
         type: String,
-        default: '',
+        required: true,
     },
+    history: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: "Video",
+        }
+    ],
+    channel: {
+        type: Schema.Types.ObjectId,
+        ref: "Channel",
+    },
+    subscribed: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: "Channel",
+        }
+    ],
+    playlist: {
+        type: Schema.Types.ObjectId,
+        ref: "Playlist",
+    }
+    
 }, { timestamps: true });
 
 // Hashing password before saving
@@ -36,6 +67,19 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.comparePassword = async function (userPassword) {
     return await bcrypt.compare(userPassword, this.password);
 };
+
+// Generating Access Token
+
+userSchema.methods.generateAccessToken = function(){
+    return jwt.sign({
+        _id : this._id,
+        username : this.username,
+        email : this.email
+    })
+},process.env.ACCESS_TOKEN_SECRET,{
+    expiresIn: process.env.ACCESS_TOKEN_EXPIRY
+}
+
 
 // Exporting User model
 export const User = mongoose.model("User", userSchema);
