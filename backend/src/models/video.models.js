@@ -11,6 +11,11 @@ const videoSchema = new videoSchema({
         type: String,
         trim: true,
       },
+      publishedBy:{
+        type:Schema.Types.ObjectId,
+        ref:"Channel",
+        required:true
+      },
       url: {
         type: String,
         required: true,
@@ -36,6 +41,17 @@ const videoSchema = new videoSchema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
       }],
+      comments:[
+        {
+            type:Schema.Types.ObjectId,
+            ref:"Comment"
+        }
+    ],
+    category:{
+      type:String,
+      enum:["All","Music","Funny","Sports","Movie","News","Study","Cricket","Kids","Gaming"],
+      required:true
+  },
 },{timestamps: true})
 
 export const Video = mongoose.model("Video", videoSchema)
