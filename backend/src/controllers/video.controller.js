@@ -1,5 +1,5 @@
 import mongoose from "mongoose"
-import {Channel} from "../models/channel.model.js"
+import {Channel} from "../models/channel.models.js"
 import {Video} from "../models/video.models.js"
 import { uploadThumbnailOnCloud, uploadVideoOnCloud } from "../config/cloud.config.js"
 
@@ -226,6 +226,7 @@ const updateVideo = async (req, res, next) => {
     }
 }
 
+// Like video
 
 const likeVideo = async(req,res,next)=>{
 try {
@@ -251,8 +252,59 @@ try {
 }
 
 
+// unlilke Video
+
+const unlikeVideo = async (req, res, next) => {
+    try {
+      const user = req.user?.userId;
+      const { videoId } = req.params;
+  
+      if (!user || !videoId) {
+        return res.status(400).json({ message: "Invalid Request" });
+      }
+  
+      const video = await Video.findById(videoId);
+      if (!video) {
+        return res.status(400).json({ message: "Video does not exist" });
+      }
+  
+      if (!video.likedBy.includes(user)) {
+        return res.status(400).json({ message: "You have not liked this video" });
+      }
+  
+      video.likedBy = video.likedBy.filter(userId => userId.toString() !== user.toString());
+      video.likes -= 1;
+      await video.save();
+  
+      return res.status(200).json({ message: "Video unliked successfully", likes: video.likes });
+    } catch (error) {
+      next(error);
+    }
+  };
+  
+//   check user that liked video
+
+const hasLikedVideo = async(req,res,next)=>{
+    try {
+        const user = req.user?.userId
+        const {videoId} = req.params
+        if(!user || !videoId){
+            return res.status(400).json({message: "Invalid Request"})
+        }
+        const video = await video.findById(videoId)
+        if(!video){
+            return res.status(400).json({message: "Video does not exist"})
+        }
+        const hasLiked = video.likedBy.includes(user._id)
+        return res.status(200).json({hasLiked},hasLiked?"User has liked the video" : "User has not liked video")
+    } catch (error) {
+        next(error)
+    }
+}
 
 
 
 
-export {publishVideo,getVideoById,fetchAllVideos,updateVideo,likeVideo}
+
+
+export {publishVideo,getVideoById,fetchAllVideos,deleteVideo,updateVideo,likeVideo,unlikeVideo,hasLikedVideo}

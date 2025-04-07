@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken"
 import {User} from "../models/user.models.js"
 import bcrypt from "bcryptjs"
+import {errorHandler} from "../middlewares/error.middleware.js"
 
 const generateAccessToken = async(userId)=>{
     try {
@@ -19,38 +20,51 @@ const generateAccessToken = async(userId)=>{
 
 // Registering User
 
-const registerUser = async(req,res,next)=>{
- try {
-       const {username,email,password} = req.body
-       if(!username || !email || !password){
-           return res.status(400).json({message : "All fields are required"})
-       }
-       const userExist = await User.findOne({$or:[{email},{password}]})
-       if(userExist){
-           return res.status(400).json({message:"User already Exist"})
-       }
-       const hashedPassword = await bcrypt.hash(password,10)
-      const user = await user.create({
-        username : username.toLowerCase(),
-        email,
-        password: hashedPassword
-      })
-      const createdUser = await user.findById(user._id).select("-password")
-      if(!createdUser){
-        return res.status(400).json({message: "User Not Found"})
+const registerUser = async (req, res, next) => {
+    try {
+      const { username, email, password } = req.body;
+  
+      if (!username || !email || !password) {
+        return res.status(400).json({ message: "All fields are required" });
       }
+  
+      const userExist = await User.findOne({ $or: [{ email }, { username }] });
+      if (userExist) {
+        return res.status(400).json({ message: "User already exists" });
+      }
+  
+      const hashedPassword = await bcrypt.hash(password, 10);
+  
+      const newUser = await User.create({
+        username: username.toLowerCase(),
+        email,
+        profile: "https://default-avatar.com/avatar.png", 
+        password: hashedPassword,
+      });
+  
+      if (!newUser) {
+        return res.status(400).json({ message: "Something went wrong" });
+      }
+  
+      const createdUser = await User.findById(newUser._id).select("-password");
+      if (!createdUser) {
+        return res.status(400).json({ message: "User Not Found" });
+      }
+  
       const { accessToken } = await generateAccessToken(createdUser._id);
-
+  
       return res.status(201).json({
         message: "User registered successfully",
         user: createdUser,
         token: accessToken,
       });
- } catch (error) {
-    console.error("Error during Registration",error)
-    next(error)
- }
-}
+  
+    } catch (error) {
+    //   console.error("Error during Registration", error);
+      next(error);
+    }
+  };
+  
 
 // Login User
 
@@ -72,7 +86,7 @@ const loginUser = async(req,res,next)=>{
             return res.status(400).json({message:"Invalid Password"})
         }
         // Generating JWT Token
-        const { accessToken } = await generateAccessToken(user._id);
+        const { accessToken } = await generateAccessToken(User._id);
 
         const safeUser = await User.findById(User._id).select("-password");
     
@@ -109,10 +123,10 @@ const logoutUser = async(req,res,next)=>{
 const getUserProfile = async(req,res,next)=>{
     try {
         const userId = req.user?.userId;
-        if(!User){
+        if(!userId){
             return res.status(404).json({message:"User not found, Please login and try again!"})
         }
-        return res.status(200).json({message:"User Retrived Successfully"})
+        return res.status(200).json({message:"User Reterived Successfully"})
     } catch (error) {
         next(error)
     }

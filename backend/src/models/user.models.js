@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from 'bcryptjs';
+import jwt from "jsonwebtoken"
+
 
 const userSchema = new mongoose.Schema({
     username: {
@@ -8,16 +10,7 @@ const userSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
-    firstName:{
-        type: String,
-        required: true,
-        trim: true
-    },
-    lastName:{
-        type: String,
-        required: true,
-        trim: true
-    },
+   
     email: {
         unique: true,
         type: String,
@@ -35,22 +28,22 @@ const userSchema = new mongoose.Schema({
     },
     history: [
         {
-            type: Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
             ref: "Video",
         }
     ],
     channel: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "Channel",
     },
     subscribed: [
         {
-            type: Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
             ref: "Channel",
         }
     ],
     playlist: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "Playlist",
     }
     
