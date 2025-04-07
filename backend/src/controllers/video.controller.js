@@ -186,10 +186,73 @@ const deleteVideo = async(req,res,next)=>{
     }
 }
 
+// Updating Video Details
+
+const updateVideo = async (req, res, next) => {
+    try {
+        const user = req.user?.userId
+        const videoId = req.params
+        if(!user || !videoId){
+            return res.status(400).json({message: "Invalid Request"})
+        }
+        const {title,description,category} = req.body
+        if(!title && !description && !category){
+            return res.status(400).json({message: "Please provide at least one field to update"})
+        }
+        const video = await video.findById(videoId)
+        if(!video){
+            return res.status(400).json({message: "Video does not Exist"})
+        }
+        const objectToUpdate = {}
+        if(title){
+          objectToUpdate.title=title
+        }
+        if(description){
+          objectToUpdate.description=description
+        }
+        if(category){
+          objectToUpdate.category=category
+        }
+        if(video.publishedBy.toString()!== user.channel.toString()){
+            return res.status(400).json({message: "You are not authorized to update this video"})
+        }
+        const updatedVideo = await Video.findByIdAndUpdate(videoId,objectToUpdate,{new:true})
+        if(!updatedVideo){
+            return res.status(500).json({message: "Error while updating the video."})
+        }
+        return res.status(200).json({message: "Video updated successfully",updatedVideo})
+    } catch (error) {
+        next(error)
+    }
+}
+
+
+const likeVideo = async(req,res,next)=>{
+try {
+    const user = req.user?.userId
+    const {videoId} = req.params
+    if(!user || !videoId){
+        return res.status(400).json({message: "Invalid Request"})
+    }
+    const video = await video.findById(videoId)
+    if(!video){
+        return res.status(400).json({message: "Video does not Exist"})
+    }
+    if(video.likedBy.includes(user._id)){
+        return res.status(400).json({message: "You have already liked this video"})
+    }
+    video.likedBy.push(user._id)
+    video.likes +=1
+    await video.save()
+    return res.status(200).json(new ApiResponse(200, { likes: video.likes }, "Video liked successfully"));
+} catch (error) {
+    next(error)
+}
+}
 
 
 
 
 
 
-export {publishVideo,getVideoById,fetchAllVideos}
+export {publishVideo,getVideoById,fetchAllVideos,updateVideo,likeVideo}
