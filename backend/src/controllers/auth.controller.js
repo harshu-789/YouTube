@@ -4,23 +4,15 @@ import bcrypt from "bcryptjs"
 import {errorHandler} from "../middlewares/error.middleware.js"
 
 const generateAccessToken = async(userId)=>{
-    try {
-        const user = await User.findById(userId)
-        if(!user){
-            return res.status(400).json({message: "User Not Found"})
-        }
-        const accessToken = user.generateAccessToken()
-        user.accessToken = accessToken()
-        await user.save({validateBeforeSave: false})
-        return{accessToken}
-    } catch (error) {
-        next(error)
-    }
+    
+       const accessToken = jwt.sign({ id: userId }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+       return accessToken
+    
 }
 
 // Registering User
 
-const registerUser = async (req, res, next) => {
+const registerUser = async (req, res) => {
     try {
       const { username, email, password } = req.body;
   
@@ -51,7 +43,7 @@ const registerUser = async (req, res, next) => {
         return res.status(400).json({ message: "User Not Found" });
       }
   
-      const { accessToken } = await generateAccessToken(createdUser._id);
+      const  accessToken  = await generateAccessToken(createdUser._id);
   
       return res.status(201).json({
         message: "User registered successfully",
@@ -60,8 +52,8 @@ const registerUser = async (req, res, next) => {
       });
   
     } catch (error) {
-    //   console.error("Error during Registration", error);
-      next(error);
+      console.error("Error during Registration", error);
+      // next(error);
     }
   };
   
@@ -81,18 +73,18 @@ const loginUser = async(req,res,next)=>{
         if(!password || !existingUser.password){
             return res.status(400).json({message : "Password or hash is missing"})
         }
-        const isValidPassword = await bcrypt.compare(password,existingUser.password)
+        const isValidPassword = existingUser.comparePassword(password)
         if(!isValidPassword){
             return res.status(400).json({message:"Invalid Password"})
         }
         // Generating JWT Token
-        const { accessToken } = await generateAccessToken(User._id);
-
-        const safeUser = await User.findById(User._id).select("-password");
-    
+        const  accessToken  = await generateAccessToken(User._id);
+           console.log(existingUser,"huhjbb")
+        const safeUser = await User.findById(existingUser._id).select("-password");
+           console.log(safeUser)
         return res.status(200).json({
           message: "Login successful",
-          user: safeUser,
+          user: "existingUser",
           token: accessToken,
         });
     } catch (error) {
@@ -120,46 +112,82 @@ const logoutUser = async(req,res,next)=>{
 
 // Get User profile
 
-const getUserProfile = async(req,res,next)=>{
-    try {
-        const userId = req.user?.userId;
-        if(!userId){
-            return res.status(404).json({message:"User not found, Please login and try again!"})
-        }
-        return res.status(200).json({message:"User Reterived Successfully"})
-    } catch (error) {
-        next(error)
+const getUserProfile = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      console.log(" [getUserProfile] No userId found in request.",userId);
+      return res.status(401).json({ message: "Unauthorized. Please login and try again!" });
     }
-}
+    
+    console.log(`[getUserProfile] Fetching user with ID: ${userId}`);
+
+
+    const user = await User.findById(userId).select("-password"); 
+
+    if (!user) {
+      console.log("[getUserProfile] User not found in database.");
+      return res.status(404).json({ message: "User not found!" });
+    }
+    console.log("[getUserProfile] User profile retrieved successfully:", user);
+
+    return res.status(200).json({
+      message: "User retrieved successfully",
+      user,
+      
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 // Updating Account Details
+const updateUserAccount = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
 
-const updateUserAccount = async(req,res,next)=>{
-    try {
-        const userId = req.user?.userId;
-        if(!User){
-            return res.status(404).json({message:"User not Found, Please try again"})
-        }
-        const {firstName,lastName} =req.body
-        if(!firstName || !lastName){
-            return res.status(401).json({message: "All fields are required."})
-        }
-       if(firstName){
-        User.firstName = firstName
-       }
-       if(lastName){
-        User.lastName = lastName
-       }
-     const updatedUser =   await User.save()
-     if(!updatedUser){
-        return res.status(500).json({message:"Something Went Wrong"})
-     }
-     updatedUser.password = hashedPassword
-     return res.status(200).json({message:"User Account Updated Successfully"})
-    } catch (error) {
-        next(error)
+    if (!userId) {
+      console.log("[updateUserAccount] No user ID found in request.");
+      return res.status(401).json({ message: "Unauthorized. Please login again." });
     }
-}
+
+    const { username } = req.body;
+
+    if (!username) {
+      console.log("[updateUserAccount] Missing required fields in request body.");
+      return res.status(400).json({ message: "All fields are required." });
+    }
+
+    console.log(`[updateUserAccount] Attempting to update user ID: ${userId}`);
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      console.log("[updateUserAccount] User not found in database.");
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    user.username = username;
+
+    const updatedUser = await user.save();
+
+    console.log("[updateUserAccount] User updated successfully:", updatedUser);
+
+    return res.status(200).json({
+      message: "User account updated successfully",
+      user: {
+        _id: updatedUser._id,
+        username: updatedUser.username,
+        email: updatedUser.email,
+        
+      },
+    });
+  } catch (error) {
+    console.error("[updateUserAccount] Error occurred:", error);
+    next(error);
+  }
+};
 
 
 

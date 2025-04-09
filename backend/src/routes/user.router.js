@@ -8,7 +8,7 @@ router.post('/registerUser', registerUser);
 router.post('/loginUser', loginUser);
 
 router.get('/logoutUser',logoutUser)
-router.get('/getUserProfile', authMiddleware, getUserProfile)
-router.put('/updateUserAccount', authMiddleware, updateUserAccount)
+router.get('/profile', authMiddleware, getUserProfile)
+router.put('/account', authMiddleware, updateUserAccount)
 
 export default router;
