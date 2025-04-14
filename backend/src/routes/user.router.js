@@ -7,7 +7,7 @@ const router = express.Router()
 router.post('/registerUser', registerUser);
 router.post('/loginUser', loginUser);
 
-router.get('/logoutUser',logoutUser)
+router.post('/logoutUser',logoutUser)
 router.get('/profile', authMiddleware, getUserProfile)
 router.put('/account', authMiddleware, updateUserAccount)
 

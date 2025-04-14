@@ -1,5 +1,5 @@
-import jwt from "jsonwebtoken"
-import {User} from "../models/user.models.js"
+import jwt from "jsonwebtoken";
+import { User } from "../models/user.models.js"; 
 import bcrypt from "bcryptjs"
 import {errorHandler} from "../middlewares/error.middleware.js"
 
@@ -78,15 +78,13 @@ const loginUser = async(req,res,next)=>{
             return res.status(400).json({message:"Invalid Password"})
         }
         // Generating JWT Token
-        const  accessToken  = await generateAccessToken(User._id);
-           console.log(existingUser,"huhjbb")
-        const safeUser = await User.findById(existingUser._id).select("-password");
-           console.log(safeUser)
-        return res.status(200).json({
-          message: "Login successful",
-          user: "existingUser",
-          token: accessToken,
-        });
+        const token = jwt.sign(
+          { userId: existingUser._id },
+          process.env.ACCESS_TOKEN_SECRET,
+          { expiresIn: "1d" }
+        );
+        
+        res.status(200).json({ token });
     } catch (error) {
         next(error)
     }
@@ -114,7 +112,7 @@ const logoutUser = async(req,res,next)=>{
 
 const getUserProfile = async (req, res, next) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.user?._id;
 
     if (!userId) {
       console.log(" [getUserProfile] No userId found in request.",userId);
@@ -143,51 +141,55 @@ const getUserProfile = async (req, res, next) => {
 };
 
 // Updating Account Details
+
+
 const updateUserAccount = async (req, res, next) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.user?._id;
 
     if (!userId) {
-      console.log("[updateUserAccount] No user ID found in request.");
-      return res.status(401).json({ message: "Unauthorized. Please login again." });
+      return res.status(401).json({ message: "Unauthorized. Please log in again." });
     }
 
     const { username } = req.body;
 
-    if (!username) {
-      console.log("[updateUserAccount] Missing required fields in request body.");
-      return res.status(400).json({ message: "All fields are required." });
+    if (!username?.trim()) {
+      return res.status(400).json({ message: "Username is required." });
     }
-
-    console.log(`[updateUserAccount] Attempting to update user ID: ${userId}`);
 
     const user = await User.findById(userId);
 
     if (!user) {
-      console.log("[updateUserAccount] User not found in database.");
       return res.status(404).json({ message: "User not found." });
     }
 
-    user.username = username;
-
+    user.username = username.trim();
     const updatedUser = await user.save();
 
-    console.log("[updateUserAccount] User updated successfully:", updatedUser);
+    // Generate a fresh token with userId
+    const token = jwt.sign(
+      { userId: updatedUser._id },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "1d" }
+    );
 
     return res.status(200).json({
-      message: "User account updated successfully",
+      message: "User account updated successfully.",
       user: {
         _id: updatedUser._id,
         username: updatedUser.username,
         email: updatedUser.email,
-        
       },
+      token,
+      tokenType: "Bearer",
     });
   } catch (error) {
-    console.error("[updateUserAccount] Error occurred:", error);
-    next(error);
+    console.error("[updateUserAccount] Error:", error.message);
+    return next(error);
   }
 };
+
+
 
 
 
