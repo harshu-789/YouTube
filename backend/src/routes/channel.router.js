@@ -6,8 +6,7 @@ import { upload } from "../middlewares/multer.middleware.js"
 
 const router = express.Router()
 
-router.route("")
-.post( upload.single("profile"),authMiddleware,createChannel)
+router.route("/createChannel").post(authMiddleware,createChannel)
 
 router.route("/:channelId")
 .get(authMiddleware,getChannel)

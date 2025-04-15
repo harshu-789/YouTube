@@ -16,17 +16,16 @@ router
   router.route("").get(authMiddleware,fetchAllVideos);
 
 router
-  .route("/:channelId")
+  .route("/:ChannelId")
   .post(
     authMiddleware,
     upload.fields([
-      { name: "video", maxCount: 1 }, // Max 1 video
-      { name: "thumbnail", maxCount: 1 }, // Max 1 thumbnail
+      { name: "Video", maxCount: 1 }, // Max 1 video
+      { name: "Thumbnail", maxCount: 1 }, // Max 1 thumbnail
     ]),
     publishVideo
   )
-  router.route("/:videoId")
-  .put(authMiddleware,updateVideo)
+  router.put("/:videoId",authMiddleware,updateVideo)
 
 
   router.route("/:videoId").get(authMiddleware,getVideoById)

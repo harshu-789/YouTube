@@ -8,7 +8,7 @@ import { uploadThumbnailOnCloud, uploadVideoOnCloud } from "../config/cloud.conf
 
 const publishVideo = async(req,res,next)=>{
     try {
-       const user = req.user?.userId 
+       const user = req.user?._id 
        if(!user){
         return res.status(401).json({message:"Unauthorized"})
        }
@@ -28,7 +28,11 @@ const publishVideo = async(req,res,next)=>{
         return res.status(400).json({message:"Title, description and category are required"})
        }
        const getVideoFile = req.files?.Video?.[0]
+
+
        if(!getVideoFile){
+
+
         return res.status(400).json({message:"Video file is required"})
        }
        const getThumbnailFile = req.files?.thumbnail?.[0]
