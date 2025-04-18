@@ -68,75 +68,80 @@ const publishVideo = async(req,res,next)=>{
 
 // Get a video by its Id
 
-const getVideoById = async(req,res,next)=>{
+const getVideoById = async (req, res, next) => {
     try {
-        const {videoId} = req.params
-        if(!videoId){
-            return res.status(400).json({message:"Video id is required"})
-        }
-        const video = await Video.aggregate([
-            {
-                $match: {_id: new mongoose.Types.ObjectId(videoId)}
-            },
-            {
-                $lookup:{
-                    from : "Channels",
-                    localField : "publishedBy",
-                    foreignField : "_id",
-                    as : "Channel"
-
-                },
-            },
-            {
-                $lookup:{
-                    from : "Comments",
-                    localField : "comments",
-                    foreignField : "_id",
-                    as : "Comments"
-                },
-            },
-            {
-                $unwind :{
-                    path : "$comments",
-                    preserveNullAndEmptyArrays : true,
-                },
-            },
-            {
-                $lookup : {
-                    from : "Users",
-                    localField : "comments.userId",
-                    foreignField : "_id",
-                    as : "comments.user"
-                },
-            },
-            {
-                $group: {
-                    _id: "$_id",
-                    videoUrl:{$first:"$videoUrl"},
-                    title: { $first: "$title" },
-                    description: { $first: "$description" },
-                    Channel: { $first: "$Channel" },
-                    comments: { $push: "$comments" },
-                },
-            },
-        ])
-
-        if(!video || video.length === 0){
-            return res.status(400).json({message: "Video does not Exist"})
-        }
-        const videoDocu = await video.findById(videoId)
-        if(!videoDocu){
-            return res.status(400).json({message: "Video does not Exist"})
-        }
-        videoDocu.views += 1
-        await videoDocu.save()
-
-        return res.status(200).json(new ApiResponse(200, video, "Video retrieved successfully"));
+      const { videoId } = req.params;
+      if (!videoId) {
+        return res.status(400).json({ message: "Video id is required" });
+      }
+  
+      const videoData = await Video.aggregate([
+        {
+          $match: { _id: new mongoose.Types.ObjectId(videoId) },
+        },
+        {
+          $lookup: {
+            from: "Channels",
+            localField: "publishedBy",
+            foreignField: "_id",
+            as: "Channel",
+          },
+        },
+        {
+          $lookup: {
+            from: "Comments",
+            localField: "comments",
+            foreignField: "_id",
+            as: "Comments",
+          },
+        },
+        {
+          $unwind: {
+            path: "$comments",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "Users",
+            localField: "comments.userId",
+            foreignField: "_id",
+            as: "comments.user",
+          },
+        },
+        {
+          $group: {
+            _id: "$_id",
+            videoUrl: { $first: "$videoUrl" },
+            title: { $first: "$title" },
+            description: { $first: "$description" },
+            Channel: { $first: "$Channel" },
+            comments: { $push: "$comments" },
+          },
+        },
+      ]);
+  
+      if (!videoData || videoData.length === 0) {
+        return res.status(400).json({ message: "Video does not exist" });
+      }
+  
+      // Update view count
+      const videoDoc = await Video.findById(videoId);
+      if (!videoDoc) {
+        return res.status(400).json({ message: "Video does not exist" });
+      }
+  
+      videoDoc.views += 1;
+      await videoDoc.save();
+  
+      return res
+        .status(200)
+        .json(new ApiResponse(200, videoData[0], "Video retrieved successfully"));
     } catch (error) {
-        next (error)
+      next(error);
     }
-}
-
+  };
+  
 // Fetching all Videos with Filers
 
 const fetchAllVideos = async(req,res,next)=>{
