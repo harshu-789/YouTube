@@ -112,7 +112,7 @@ function Auth (){
     
             <div className="text-center">
               <button
-                onClick={() => setIsLoggedIn(!isLogin)}
+                onClick={() => setIsLoggedIn(!isLoggedIn)}
                 className="text-sm text-blue-600 hover:text-blue-800"
               >
                 {isLoggedIn

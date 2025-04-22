@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react"
 import {useSearchParams} from "react-router-dom"
 import axios from "../lib/axios.js"
-
+import VideoCard from '../components/VideoCard';
+import FilterButtons from '../components/Filterbutton.jsx';
 
 
 

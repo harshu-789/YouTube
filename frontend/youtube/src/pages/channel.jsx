@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import store from "../store/userAuth.js";
+import VideoCard from '../components/VideoCard';
 import axios from "axios";
 
 
