@@ -13,6 +13,7 @@ const publishVideo = async(req,res,next)=>{
         return res.status(401).json({message:"Unauthorized"})
        }
        const {channelId}  = req.params
+      console.log("channelID",channelId)
        if(!channelId){
         return res.status(400).json({message:"Channel ID is required"})
        }
@@ -23,11 +24,16 @@ const publishVideo = async(req,res,next)=>{
        if(user.toString()!==channel.owner.toString()){
         return res.status(403).json({message:"You are not the owner of this channel"})
        }
+               
        const {title,description,category} = req.body
+       console.log(title,description,category)
        if(!title || !description || !category){
         return res.status(400).json({message:"Title, description and category are required"})
        }
-       const getVideoFile = req.files?.Video?.[0]
+       console.log(req.files)
+       const getVideoFile = req.files?.video?.[0]
+       console.log(getVideoFile,"getVideoFile")
+
 
 
        if(!getVideoFile){
@@ -36,6 +42,7 @@ const publishVideo = async(req,res,next)=>{
         return res.status(400).json({message:"Video file is required"})
        }
        const getThumbnailFile = req.files?.thumbnail?.[0]
+       console.log(getThumbnailFile,"getThumbnailFile")
        if(!getThumbnailFile){
         return res.status(400).json({message:"Thumbnail file is required"})
        }
@@ -48,8 +55,8 @@ const publishVideo = async(req,res,next)=>{
        const video = new Video({
         publishedBy: channel._id,
         category,
-        url: videoResult.secure_url, // Store video URL
-        thumbnailUrl: thumbnailResult.secure_url, // Store thumbnail URL
+        video: videoResult.secure_url, // Store video URL
+        thumbnail: thumbnailResult.secure_url, // Store thumbnail URL
         description,
         title,
        })
