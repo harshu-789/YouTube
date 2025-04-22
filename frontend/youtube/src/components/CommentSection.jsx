@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import store from '../store/authStore';
+import store from '../store/userAuth';
 import axios from '../lib/axios';
 
 function CommentSection({ videoId, comments: initialComments }) {

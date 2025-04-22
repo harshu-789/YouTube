@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import store from "../store/userAuth";
+import store from "../store/userAuth.js";
 import axios from "axios";
 
 

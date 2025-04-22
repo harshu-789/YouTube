@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom';
-import store from '../store/authStore';
+import store from '../store/userAuth';
 
 function ProtectedRoute({ children }) {
   const { user } = store();

@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 import ReactPlayer from 'react-player';
 
 import CommentSection from '../components/CommentSection';
-import useAuthStore from '../store/authStore';
+import store from '../store/userAuth';
 
 
 
@@ -18,7 +18,7 @@ function Video(){
     const[video,setVideo] = useState(null)
     const [isLiked,setIsLiked] = useState(false)
     const [isDisliked,setIsDisliked] = useState(false)
-    const{user} = useAuthStore()
+    const{user} = store()
 
     useEffect(()=>{
         const fetchVideo = async ()=>{
