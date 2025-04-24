@@ -15,11 +15,15 @@ router
 
   router.route("").get(authMiddleware,fetchAllVideos);
 
-  router.post("/:channelId", authMiddleware, upload.any(), (req, res,next) => {
-    console.log("Received files:", req.files);
-    console.log("Received body:", req.body);
-    next()
-  },publishVideo);
+  router.post(
+    "/:channelId",
+    authMiddleware,
+    upload.fields([
+      { name: 'video', maxCount: 1 },
+      { name: 'thumbnail', maxCount: 1 }
+    ]),
+    publishVideo
+  );
   
   router.put("/:videoId",authMiddleware,updateVideo)
 
