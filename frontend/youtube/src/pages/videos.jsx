@@ -3,7 +3,12 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ReactPlayer from 'react-player';
 import CommentSection from '../components/CommentSection';
-import store from '../store/userAuth';
+import { useSelector } from 'react-redux'
+
+function video() {
+  const user = useSelector(state => state.user.user)   // adjust path to your slice
+  const isLoggedIn = useSelector(state => state.user.isLoggedIn)
+}
 
 
 

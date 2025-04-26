@@ -1,91 +1,61 @@
-
+// config/cloud.config.js
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
-import dotenv from 'dotenv'
-import path from 'path';
+import dotenv from 'dotenv';
 
-dotenv.config()
+dotenv.config();
 
-// Cloudinary configuration
-cloudinary.config({ 
-  cloud_name: 'process.env.CLOUDINARY_API_NAME', 
-  api_key: 'process.env.CLOUDINARY_API_KEY', 
-  api_secret: 'process.env.CLOUDINARY_API_SECRET' // Click 'View API Keys' above to copy your API secret
+// —— 1) Cloudinary config ——
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_API_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-
-
-const uploadResult = await cloudinary.uploader
-       .upload(
-           'https://res.cloudinary.com/demo/image/upload/getting-started/shoes.jpg', {
-               public_id: 'shoes',
-           }
-       )
-       .catch((error) => {
-           console.log(error);
-       });
-    
-// Function to upload a video to Cloudinary
-async function uploadVideoOnCloud(filepath) {
+// —— 2) (Optional) demo upload wrapped in an async IIFE ——
+;(async function demo() {
   try {
-    const result = await cloudinary.uploader.upload(filepath, {
-      resource_type: 'video', // Indicate that this is a video file
-      public_id: `youtube_video_${Date.now()}`, // Use a timestamp-based public ID to ensure uniqueness
-      folder: 'Youtube', // Store videos in the 'Youtube' folder
-      eager: [{ width: 400, height: 300, crop: 'pad' }] // Optional: Transcoding options (resize)
-    });
-
-    // Delete the local video file after uploading
-    fs.unlinkSync(filepath); // Synchronously unlink (delete) the file
-
-    // Returning the result, which includes video metadata (URL, format, etc.)
-    return result; 
-  } catch (error) {
-    console.error("Error uploading video:", error);
-    throw error; // Rethrow the error for further handling
+    const demo = await cloudinary.uploader.upload(
+      'https://res.cloudinary.com/demo/image/upload/getting-started/shoes.jpg',
+      { public_id: 'shoes' }
+    );
+    console.log('Demo upload:', demo);
+  } catch (err) {
+    console.error('Demo error:', err);
   }
+})();
+
+// —— 3) Helper functions ——
+
+export async function uploadVideoOnCloud(filepath) {
+  const result = await cloudinary.uploader.upload(filepath, {
+    resource_type: 'video',
+    public_id:     `youtube_video_${Date.now()}`,
+    folder:        'Youtube',
+    eager:         [{ width: 400, height: 300, crop: 'pad' }],
+  });
+  fs.unlinkSync(filepath);
+  return result;
 }
 
-// Function to upload a thumbnail to Cloudinary
-async function uploadThumbnailOnCloud(filepath) {
-  try {
-    const result = await cloudinary.uploader.upload(filepath, {
-      resource_type: 'image', // Correct resource type for images (thumbnails)
-      public_id: `youtube_thumbnail_${Date.now()}`, // Use a timestamp-based public ID to ensure uniqueness
-      folder: 'Youtube', // Store images in the 'Youtube' folder
-      eager: [{ width: 400, height: 300, crop: 'pad' }] // Optional: Transcoding options (resize)
-    });
-
-    // Delete the local thumbnail file after uploading
-    fs.unlinkSync(filepath); // Synchronously unlink (delete) the file
-
-    // Returning the result, which includes image metadata (URL, format, etc.)
-    return result;
-  } catch (error) {
-    console.error("Error uploading thumbnail:", error);
-    throw error; // Rethrow the error for further handling
-  }
+export async function uploadThumbnailOnCloud(filepath) {
+  const result = await cloudinary.uploader.upload(filepath, {
+    resource_type: 'image',
+    public_id:     `youtube_thumbnail_${Date.now()}`,
+    folder:        'Youtube',
+    eager:         [{ width: 400, height: 300, crop: 'pad' }],
+  });
+  fs.unlinkSync(filepath);
+  return result;
 }
 
-// Function to upload a profile picture to Cloudinary
-async function uploadProfileOnCloud(filepath) {
-  try {
-    const result = await cloudinary.uploader.upload(filepath, {
-      resource_type: 'image', // Correct resource type for images (profile pictures)
-      public_id: `youtube_profile_${Date.now()}`, // Use a timestamp-based public ID to ensure uniqueness
-      folder: 'Youtube', // Store images in the 'Youtube' folder
-      eager: [{ width: 400, height: 300, crop: 'pad' }] // Optional: Transcoding options (resize)
-    });
-
-    // Delete the local profile picture file after uploading
-    fs.unlinkSync(filepath); // Synchronously unlink (delete) the file
-
-    // Returning the result, which includes image metadata (URL, format, etc.)
-    return result;
-  } catch (error) {
-    console.error("Error uploading profile:", error);
-    throw error; // Rethrow the error for further handling
-  }
+export async function uploadProfileOnCloud(filepath) {
+  const result = await cloudinary.uploader.upload(filepath, {
+    resource_type: 'image',
+    public_id:     `youtube_profile_${Date.now()}`,
+    folder:        'Youtube',
+    eager:         [{ width: 400, height: 300, crop: 'pad' }],
+  });
+  fs.unlinkSync(filepath);
+  return result;
 }
-
-export { uploadVideoOnCloud, uploadThumbnailOnCloud, uploadProfileOnCloud };

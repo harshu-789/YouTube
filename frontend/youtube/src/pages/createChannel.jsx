@@ -8,6 +8,7 @@ import axios from '../lib/axios';
 
 
 function createChannel () {
+    const url = `https://youtube-4vf7.onrender.com/api/channel`
     const [formData,setFormData] = useState({
         name: '',
     description: '',
