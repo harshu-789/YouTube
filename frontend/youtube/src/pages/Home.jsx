@@ -11,7 +11,7 @@ function Home() {
   const [selectCategory, setSelectCategory] = useState('All')
   const [videos, setVideos] = useState([])
   const [loading, setLoading] = useState(false)
-  const url = `https://youtube-4vf7.onrender.com/api/video`;
+  
 
   useEffect(() => {
     const fetchVideos = async () => {
@@ -21,7 +21,7 @@ function Home() {
         if (searchQuery) params.append('search', searchQuery)
         if (selectCategory !== 'All') params.append('category', selectCategory)
 
-          const { data } = await axios.get(`/api/video?${params.toString()}`)
+          const { data } = await axios.get(`http://localhost:8000/api/video?${params.toString()}`)
 
         setVideos(data)
       } catch (err) {
@@ -54,3 +54,6 @@ function Home() {
 }
 
 export default Home
+
+
+
