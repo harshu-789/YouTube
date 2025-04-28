@@ -1,121 +1,45 @@
-import axios from "axios";
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import ReactPlayer from 'react-player';
-import CommentSection from '../components/CommentSection';
-import { useSelector } from 'react-redux'
+import React, { useEffect, useState } from "react";
+import { useParams }                  from "react-router-dom";
+import ReactPlayer                    from "react-player";
+import CommentSection                 from "../components/CommentSection";
+import axios                          from "../lib/axios.js";
 
-function video() {
-  const user = useSelector(state => state.user.user)   // adjust path to your slice
-  const isLoggedIn = useSelector(state => state.user.isLoggedIn)
-}
+export default function VideoPage() {
+  const { id } = useParams();
+  const [video, setVideo] = useState(null);
+  const [error, setError] = useState("");
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await axios.get(`/video/${id}`);
+        const v   = res.data.data;
+        console.log("▶ Cloudinary video URL:", v.url);
+        setVideo(v);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load video");
+      }
+    })();
+  }, [id]);
 
+  if (error) return <div className="p-4 text-red-600">{error}</div>;
+  if (!video) return <div className="p-4">Loading…</div>;
 
-
-
-
-
-
-function Video(){
-    const{id} = useParams
-    const[video,setVideo] = useState(null)
-    const [isLiked,setIsLiked] = useState(false)
-    const [isDisliked,setIsDisliked] = useState(false)
-    const{user} = store()
-
-    useEffect(()=>{
-        const fetchVideo = async ()=>{
-            try {
-                const {data} = await axios.get(`/videos/${id}`)
-                setVideo(data)
-                if(user){
-                    setIsLiked(data.likes.some((like)=>like._id===user._id))
-                }
-                setIsDisliked(data.disliked.some((dislike)=>dislike._id===user._id))
-
-            } catch (error) {
-                console.error('Error fetching video:', error);
-            }
-        }
-        fetchVideo();
-    },[id, user])
-
-    const handleLike = async()=>{
-        if(!user) return
-        try {
-            await axios.post(`/videos/${id}/like`)
-            setIsLiked(!isLiked)
-            if(isDisliked)setIsDisliked(false)
-        } catch (error) {
-            console.error('Error liking video:', error); 
-        }
-    }
-    const handleDislike = async () => {
-        if (!user) return;
-        try {
-          await axios.post(`/videos/${id}/dislike`);
-          setIsDisliked(!isDisliked);
-          if (isLiked) setIsLiked(false);
-        } catch (error) {
-          console.error('Error disliking video:', error);
-        }
-      };
-    
-      if (!video) return <div>Loading...</div>;
-    
-
-    return(
-        <div className="max-w-6xl mx-auto px-4">
-        <div className="aspect-video">
-          <ReactPlayer
-            url={video.url}
-            width="100%"
-            height="100%"
-            controls
-            playing
-          />
-        </div>
-        <div className="mt-4">
-          <h1 className="text-2xl font-bold">{video.title}</h1>
-          <div className="flex items-center justify-between mt-2">
-            <div className="flex items-center gap-4">
-              <img
-                src={video.channel.avatar || 'https://via.placeholder.com/40'}
-                alt={video.channel.name}
-                className="h-10 w-10 rounded-full"
-              />
-              <div>
-                <h3 className="font-semibold">{video.channel.name}</h3>
-                <p className="text-sm text-gray-600">{video.views} views</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <button
-                onClick={handleLike}
-                className={`flex items-center gap-1 ${
-                  isLiked ? 'text-blue-600' : 'text-gray-600'
-                }`}
-              >
-                <span>{video.likes.length}</span>
-                <span>👍</span>
-              </button>
-              <button
-                onClick={handleDislike}
-                className={`flex items-center gap-1 ${
-                  isDisliked ? 'text-blue-600' : 'text-gray-600'
-                }`}
-              >
-                <span>{video.dislikes.length}</span>
-                <span>👎</span>
-              </button>
-            </div>
-          </div>
-          <p className="mt-4 text-gray-800">{video.description}</p>
-        </div>
-        <CommentSection videoId={id} comments={video.comments} />
+  return (
+    <div className="max-w-5xl mx-auto px-4">
+      <div className="aspect-video mb-4 bg-black">
+        <ReactPlayer
+          url={video.url}
+          controls          // show play/pause bar
+          width="100%"
+          height="100%"
+          // playing       ← remove this line so it doesn’t try to auto‐play
+        />
       </div>
-    )
+      <h1 className="text-2xl font-bold">{video.title}</h1>
+      <p className="mt-2 text-gray-700">{video.description}</p>
+      <CommentSection videoId={id} comments={video.comments || []} />
+    </div>
+  );
 }
-
-export default Video;

@@ -1,6 +1,7 @@
-import axios from 'axios';
+import axios from "axios";
 
-axios.defaults.baseURL = 'http://localhost:8000/api';
+// Point at your backend’s API root:
+axios.defaults.baseURL = "http://localhost:8000/api";
 axios.defaults.withCredentials = true;
 
-export default axios;
+export default axios;

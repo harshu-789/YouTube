@@ -1,41 +1,39 @@
-import express from "express"
-import multer from "multer"
-import {publishVideo,getVideoById,fetchAllVideos,updateVideo,deleteVideo,likeVideo,unlikeVideo,hasLikedVideo} from "../controllers/video.controller.js"
-import { authMiddleware } from "../middlewares/auth.middleware.js"
-import { upload } from "../middlewares/multer.middleware.js"
+import { Router } from "express";
+import {
+  publishVideo,
+  getVideoById,
+  fetchAllVideos,
+  deleteVideo,
+  updateVideo,
+  likeVideo,
+  unlikeVideo,
+  hasLikedVideo,
+} from "../controllers/video.controller.js";
 
-const router = express.Router()
+const router = Router();
 
-router
-  .route("/:videoId/like")
-  .get(authMiddleware, hasLikedVideo)
-  .post(authMiddleware, likeVideo)
-  .delete(authMiddleware, unlikeVideo);
+// POST   /api/video/:channelId/publish
+router.post("/:channelId/publish", publishVideo);
 
+// GET    /api/video/:videoId
+router.get("/:videoId", getVideoById);
 
-  router.route("").get(authMiddleware,fetchAllVideos);
+// GET    /api/video
+router.get("/", fetchAllVideos);
 
-  router.post(
-    "/:channelId",
-    authMiddleware,
-    upload.fields([
-      { name: 'video', maxCount: 1 },
-      { name: 'thumbnail', maxCount: 1 }
-    ]),
-    publishVideo
-  );
-  
-  router.put("/:videoId",authMiddleware,updateVideo)
+// DELETE /api/video/:videoId
+router.delete("/:videoId", deleteVideo);
 
+// PUT    /api/video/:videoId
+router.put("/:videoId", updateVideo);
 
-  router.route("/:videoId").get(authMiddleware,getVideoById)
-  .delete(authMiddleware,deleteVideo);
+// POST   /api/video/:videoId/like
+router.post("/:videoId/like", likeVideo);
 
+// POST   /api/video/:videoId/unlike
+router.post("/:videoId/unlike", unlikeVideo);
 
+// GET    /api/video/:videoId/hasLiked
+router.get("/:videoId/hasLiked", hasLikedVideo);
 
-
-
-
-
-
-export default router;
+export default router;
